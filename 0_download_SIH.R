@@ -1,11 +1,4 @@
 # Download and Clean SIH -------------------------------------
-# In this code we download and clean internation data on 
-# Brazilian health system
-
-
-# Nota para Fabiana: neste código basta colocar algum caminho de pasta no campo "folder" na linha 48 do código
-# Você deve escrever como 'C:/Users/Este é um exemplo de pasta'
-# Com isso feito, é só rodar o código completo
 
 # 0. Settings ---------------------------------------
 
