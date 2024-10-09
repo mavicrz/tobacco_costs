@@ -1,7 +1,4 @@
 # Download and Clean SIA -------------------------------------
-# In this code we download and clean data on 
-# Brazilian health system
-
 
 # 0. Settings ---------------------------------------
 
