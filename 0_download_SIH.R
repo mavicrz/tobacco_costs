@@ -10,7 +10,7 @@ install.packages('xfun')
 
 xfun::pkg_attach(c('tidyverse','purrr', 'glue', 'stringr'), install=T)
 
-# 1. Download ------------------------------------------------------------------
+# 1. Fuction  ------------------------------------------------------------------
 download_sih <- function(
     folder,
     state = NULL,
