@@ -11,6 +11,7 @@ install.packages('xfun')
 xfun::pkg_attach(c('tidyverse','purrr', 'glue', 'stringr'), install=T)
 
 # 1. Fuction  ------------------------------------------------------------------
+
 download_sih <- function(
     folder,
     state = NULL,
@@ -20,20 +21,15 @@ download_sih <- function(
   
   url = 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/Dados'
   
-  if(is.null(file) == T){
-    download.file(
-    url = glue('{url}/RD{state}{time}.dbc'),
-    destfile = glue('{folder}/RD{state}{time}.dbc'),
-    method = 'curl')}
+  file = ifelse(is.null(file) == T, glue('RD{state}{time}.dbc'), file)
   
-  else(download.file(
-    url = glue('{url}', file),
+  download.file(
+    url = glue('{url}/', file),
     destfile = glue('{folder}/',file),
     method = 'curl'
-  ))
+  )
   
 }
-
 # 2. Donwload ------------------------------------------------------------------
 
 # Write the path you want to save the files
