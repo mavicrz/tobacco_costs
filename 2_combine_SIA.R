@@ -10,9 +10,9 @@ xfun::pkg_attach(c('tidyverse','glue', 'beepr', 'future', 'furrr'), install=T)
 
 future::plan(strategy = future::multisession, workers = 4)
 
-sia_cost <- function(state){
+sia_cost <- function(state, folder){
   
-  files <- list.files(path = glue::glue('projeto_tabaco/dados/limpos/SIA/{state}'), full.names = T)
+  files <- list.files(path = glue::glue(folder,state), full.names = T)
   
   combined <- furrr::future_map(.x = files, 
                                 .f = ~haven::read_dta(file = .x) %>%
@@ -29,7 +29,7 @@ sia_cost <- function(state){
                                   dplyr::filter(pa_valapr>0), .progress = T) %>% 
     purrr::reduce(bind_rows)
   
-  haven::write_dta(combined, glue::glue('projeto_tabaco/dados/limpos/custos ambulatoriais/PA{state}.dta'))
+  haven::write_dta(combined, glue::glue(folder, '/PA{state}.dta'))
   
   beepr::beep()
   
