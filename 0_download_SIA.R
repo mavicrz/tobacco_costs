@@ -7,9 +7,9 @@ gc()
 
 # Libraries
 
-xfun::pkg_attach(c('tidyverse','purrr', 'glue', 'stringr'), install=T)
+xfun::pkg_attach(c('tidyverse','purrr', 'glue', 'stringr', 'RCurl'), install=T)
 
-# 1. Fuction  -----------------------------------------------------------------
+# 1. Fucntion  -----------------------------------------------------------------
 
 download_sia <- function(
     folder,
@@ -18,7 +18,7 @@ download_sia <- function(
     file = NULL
 ) {
   
-  url = 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/Dados'
+  url = 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados'
   
   file = ifelse(is.null(file) == T, glue('PA{state}{time}.dbc'), file)
   
@@ -40,9 +40,9 @@ folder <- ''
 
 ftp_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/Dados"
 
-file <- getURL(ftp_url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
+files <- RCurl::getURL(ftp_url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
 
-file_list <- tibble::tibble(file = stringr::str_split(file, '\\r\\n') %>% unlist()) %>% 
+file_list <- tibble::tibble(file = stringr::str_split(files, '\\r\\n') %>% unlist()) %>% 
   dplyr::filter(stringr::str_starts(pattern = 'PA', file)) %>% 
   dplyr::mutate(state = stringr::str_sub(file, 3, 4),
                 month = stringr::str_sub(file, 7, 8) %>%  as.numeric(),
