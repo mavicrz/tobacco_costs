@@ -12,7 +12,7 @@ future::plan(strategy = future::multisession, workers = 4)
 
 sia_cost <- function(state, folder){
   
-  files <- list.files(path = glue::glue(folder,state), full.names = T)
+  files <- list.files(path = glue::glue(folder,'/',state), full.names = T)
   
   combined <- furrr::future_map(.x = files, 
                                 .f = ~haven::read_dta(file = .x) %>%
