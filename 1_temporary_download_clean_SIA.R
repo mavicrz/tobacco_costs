@@ -16,9 +16,8 @@ clean_sia <- function(state = NULL,time = NULL, file = NULL, folder) {
   
   url <-  'ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados'
   
-  if(is.null(file) == T){file = glue('PA{state}{time}.dbc')}
-  else(file = file)
-
+  file <-  ifelse(is.null(file) == T, glue('PA{state}{time}.dbc'), file)
+  
   download.file(url = glue('{url}/', file),
                 method = 'curl',
                 temp)
@@ -40,27 +39,29 @@ clean_sia <- function(state = NULL,time = NULL, file = NULL, folder) {
   haven::write_dta(data = temp_clean, path = glue('{folder}/',str_remove(file, '.dbc'),'.dta'))
 }
 
-# 1. Temporary download, clean and salve dta ----------------------------
+# 2. Temporary download, clean and salve dta ----------------------------
 
 # Regex list for IDC 
 
 cid <- '^C67|^C53|^D06|^C19|^C20|^C21|^C15|^C64|^C32|^C92|^C22|^C34|^C14|^C25|^C16|I713|I714|^I70|I679|^I25|^A15|^A16|^J44|^J12|^J13|^J14|^J15|^J16|^J17|^J18|^E10|^E11|^E12|^E13|^E14|H251|H353|^S70|^S71|^S72|^S73|^S74|^S75|^S76|^S77|^S78|^S79|K053|K052|^M85|^K25|^K26|^K27|^M05|^M06|^M08'
 
-# List states from Brazil, years and months (some combinations of month and year
-# have more than one file (types a and b) because the population is too large, such as São Paulo - SP -  
-# and Minas Gerais - MG - you will have to look for each exception in the FTP download site)
+# Write the path you want to save the files
 
-states_years <- expand_grid(
-  year = 21:23,
-  month = stringr::str_pad(string = 1:12, width = 2, side = 'left', pad = '0'),
-  state = 'MG',  
-  type = c('a','b')) %>% 
-  dplyr::mutate(time = stringr::str_c(year,month,type)) %>% 
-  dplyr::arrange(state)
+folder <- ''
 
+# Here you will know all files for Outpatient Production in SUS data
 
+ftp_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/Dados"
 
-states_years %>% 
-  purrr::map2(.x = .$state,
-              .y = .$time,
-              .f = ~clean_sia(state = .x, time = .y, folder = 'projeto_tabaco/dados/limpos/SIA'))
+files <- RCurl::getURL(ftp_url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
+
+file_list <- tibble::tibble(file = stringr::str_split(files, '\\r\\n') %>% unlist()) %>% 
+  dplyr::filter(stringr::str_starts(pattern = 'PA', file)) %>% 
+  dplyr::mutate(state = stringr::str_sub(file, 3, 4),
+                month = stringr::str_sub(file, 7, 8) %>%  as.numeric(),
+                year = stringr::str_sub(file, 5, 6) %>% stringr::str_c(20,.) %>% as.numeric()) %>% 
+  dplyr::filter(year %in% 2014:2023)
+
+file_list %>% 
+  purrr::map(.x = .$file,
+              .f = ~clean_sia(file = .x, folder = folder))
