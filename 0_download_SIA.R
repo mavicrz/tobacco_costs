@@ -20,18 +20,13 @@ download_sia <- function(
   
   url = 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/Dados'
   
-  if(is.null(file) == T){
-  download.file(
-    url = glue('{url}/PA{state}{time}.dbc'),
-    destfile = glue('{folder}/PA{state}{time}.dbc'),
-    method = 'curl'
-  )}
+  file = ifelse(is.null(file) == T, glue('PA{state}{time}.dbc'), file)
   
-  else(download.file(
-    url = glue('{url}', file),
+  download.file(
+    url = glue('{url}/', file),
     destfile = glue('{folder}/',file),
     method = 'curl'
-  ))
+  )
   
 }
 
