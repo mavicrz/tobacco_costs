@@ -13,30 +13,47 @@ xfun::pkg_attach(c('tidyverse','purrr', 'glue', 'stringr'), install=T)
 # 1. Download ------------------------------------------------------------------
 download_sih <- function(
     folder,
-    state,
-    time
+    state = NULL,
+    time = NULL,
+    file = NULL
 ) {
   
-  url = 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados'
+  url = 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/Dados'
   
-  download.file(
+  if(is.null(file) == T){
+    download.file(
     url = glue('{url}/RD{state}{time}.dbc'),
     destfile = glue('{folder}/RD{state}{time}.dbc'),
+    method = 'curl')}
+  
+  else(download.file(
+    url = glue('{url}', file),
+    destfile = glue('{folder}/',file),
     method = 'curl'
-  )
+  ))
   
 }
 
-states_years <- dplyr::expand_grid(
-  year = 14:22,
-  month = stringr::str_pad(string = 1:12, width = 2, side = 'left', pad = '0'),
-  state = c('AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RO','RR','SC','SP','SE','TO')
-) %>% 
-  dplyr::mutate(time = stringr::str_c(year,month))
+# 2. Donwload ------------------------------------------------------------------
 
-states_years %>% 
-  tibble::rownames_to_column() %>% 
-  dplyr::filter(rowname > 382) %>% 
-  purrr::map2(.x = .$state, .y = .$time, 
-              .f = ~download_sih(folder = 'projeto_tabaco/dados/brutos/SIH',
-                                 state = .x, time = .y))
+# Write the path you want to save the files
+
+folder <- ''
+
+# Here you will know all files for Hospital Production in SUS data
+
+ftp_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/Dados"
+
+file <- getURL(ftp_url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
+
+file_list <- tibble::tibble(file = stringr::str_split(file, '\\r\\n') %>% unlist()) %>% 
+  dplyr::filter(stringr::str_starts(pattern = 'RD', file)) %>% 
+  dplyr::mutate(state = stringr::str_sub(file, 3, 4),
+                month = stringr::str_sub(file, 7, 8) %>%  as.numeric(),
+                year = stringr::str_sub(file, 5, 6) %>% stringr::str_c(20,.) %>% as.numeric()) %>% 
+  dplyr::filter(year %in% 2014:2023)
+
+file_list %>% 
+  purrr::map(.x = .$file, 
+             .f = ~download_sih(folder = folder,
+                                file = .x))
