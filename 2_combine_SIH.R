@@ -10,9 +10,9 @@ xfun::pkg_attach(c('tidyverse','purrr','glue', 'beepr'), install=T)
 
 
 
-sih_cost <- function(state){
+sih_cost <- function(state,folder){
   
-  files <- list.files(path = 'projeto_tabaco/dados/limpos/SIH', pattern = glue::glue('RD{state}'), full.names = T)
+  files <- list.files(path = folder, pattern = glue::glue('/RD{state}'), full.names = T)
   
   combined <- purrr::map(.x = files, 
                          .f = ~haven::read_dta(file = .x) %>%
@@ -23,7 +23,7 @@ sih_cost <- function(state){
                            dplyr::filter(val_tot>0), .progress = T) %>% 
     purrr::reduce(bind_rows)
   
-  haven::write_dta(combined, glue::glue('projeto_tabaco/dados/limpos/custos internação/RD{state}.dta'))
+  haven::write_dta(combined, glue::glue(folder,'/RD{state}.dta'))
   
   #beepr::beep()
 }
